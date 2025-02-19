@@ -11,7 +11,11 @@ from websockets.asyncio.server import serve
 
 
 async def stream_llm_response(
-    websocket: Any, audio_stream: pyaudio.Stream, client: OpenAI, messages: list[str]
+    *,
+    websocket: Any,
+    audio_stream: pyaudio.Stream,
+    client: OpenAI,
+    messages: list[dict[str, str]],
 ):
     response = ""
     for chunk in client.chat.completions.create(
@@ -50,7 +54,10 @@ async def chat(websocket: Any):
     async for msg in websocket:
         messages.append({"role": "user", "content": msg})
         response = await stream_llm_response(
-            websocket, audio_stream, llm_client, messages
+            websocket=websocket,
+            audio_stream=audio_stream,
+            client=llm_client,
+            messages=messages,
         )
         messages.append({"role": "assistant", "content": response})
 
