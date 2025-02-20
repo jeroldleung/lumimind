@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 
 from dotenv import load_dotenv
@@ -9,6 +10,16 @@ from websockets.asyncio.server import ServerConnection, serve
 async def chat(websocket: ServerConnection):
     client = OpenAI(base_url=os.getenv("BASE_URL"), api_key=os.getenv("API_KEY"))
     messages = [{"role": "system", "content": "You are a helpful assistant."}]
+
+    async def handshake():
+        msg_from_device = json.loads(await websocket.recv())
+        msg_to_device = {
+            "type": "hello",
+            "transport": "websocket",
+            "audio_params": {"sample_rate": 16000},
+        }
+        if "type" in msg_from_device and "hello" == msg_from_device["type"]:
+            await websocket.send(json.dumps(msg_to_device))
 
     async def stream_llm_response(
         client: OpenAI,
@@ -27,6 +38,7 @@ async def chat(websocket: ServerConnection):
                 await websocket.send(text)
         return response
 
+    await handshake()
     async for msg in websocket:
         messages.append({"role": "user", "content": msg})
         response = await stream_llm_response(client, messages)
@@ -34,7 +46,7 @@ async def chat(websocket: ServerConnection):
 
 
 async def main():
-    async with serve(chat, "localhost", 8765) as server:
+    async with serve(chat, "0.0.0.0", 8000) as server:
         await server.serve_forever()
 
 
