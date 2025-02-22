@@ -1,3 +1,8 @@
 openai
 websockets
 python-dotenv
+numpy
+pydub
+opuslib
+soundfile
+loguru
