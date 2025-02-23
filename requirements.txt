@@ -1,8 +1,5 @@
-openai
-websockets
-python-dotenv
-numpy
-pydub
-opuslib
-soundfile
-loguru
+openai==1.63.2
+websockets==15.0
+python-dotenv==1.0.1
+numpy==2.2.3
+loguru==0.7.3
