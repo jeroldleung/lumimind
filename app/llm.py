@@ -7,8 +7,9 @@ client = OpenAI(base_url=os.getenv("BASE_URL"), api_key=os.getenv("API_KEY"))
 messages = [{"role": "system", "content": "You are a helpful assistant."}]
 
 
-def stream_llm_output() -> Generator[str, None, str]:
+def stream_llm_output(user_input: str) -> Generator[str, None, str]:
     response_text = ""
+    messages.append({"role": "user", "content": user_input})
     for chunk in client.chat.completions.create(
         model=os.getenv("MODEL"),
         messages=messages,
@@ -24,4 +25,5 @@ def stream_llm_output() -> Generator[str, None, str]:
                 text = chunk.choices[0].delta.audio["transcript"]
                 response_text += text
 
+    messages.append({"role": "assistant", "content": response_text})
     return response_text
