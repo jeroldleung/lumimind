@@ -1,26 +1,35 @@
 from loguru import logger
+from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosedOK
-from websockets.sync.server import ServerConnection
+
+from .schemas import MessageToClient, MessageType
+from .utils import message_from_client, message_to_client
 
 
-def handle_text_message(websocket: ServerConnection, msg: str):
+async def handle_text_message(websocket: ServerConnection, msg: str):
+    logger.debug(f"Message from client {websocket.id}: {msg}")
+    m = message_from_client(msg)
+    # handle different type of messages
+    if m.type == MessageType.HELLO:
+        m_to_client = MessageToClient(type=MessageType.HELLO)
+        await websocket.send(message_to_client(m_to_client))
+        logger.info(f"Handshake with client: {websocket.id}")
+
+
+async def handle_audio_message(websocket: ServerConnection, msg: bytes):
     pass
 
 
-def handle_audio_message(websocket: ServerConnection, msg: bytes):
-    pass
-
-
-def handle_connection(websocket: ServerConnection):
+async def handle_connection(websocket: ServerConnection):
     logger.success(f"Client connected: {websocket.id}")
 
     while True:
         try:
-            msg = websocket.recv()
+            msg = await websocket.recv()
             if isinstance(msg, str):
-                handle_text_message(websocket, msg)
+                await handle_text_message(websocket, msg)
             elif isinstance(msg, bytes):
-                handle_audio_message(websocket, msg)
+                await handle_audio_message(websocket, msg)
         except ConnectionClosedOK:
             break
 
