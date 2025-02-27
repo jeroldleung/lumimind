@@ -21,7 +21,7 @@ async def handshake(websocket: ServerConnection):
     volume = {
         "type": "iot",
         "commands": [
-            {"name": "Speaker", "method": "SetVolume", "parameters": {"volume": 60}}
+            {"name": "Speaker", "method": "SetVolume", "parameters": {"volume": 75}}
         ],
     }
     await websocket.send(json.dumps(volume))
@@ -73,9 +73,6 @@ async def reply_to_user_audio_input(websocket: ServerConnection):
 
     await stream_audio_bytes(websocket, user_input)
 
-    user_audio_input.clear()
-    return user_input
-
 
 async def handle_text_message(websocket: ServerConnection, msg: str):
     logger.debug(f"Message from client {websocket.id}: {msg}")
@@ -86,6 +83,7 @@ async def handle_text_message(websocket: ServerConnection, msg: str):
     elif m.type == MessageType.LISTEN and m.state == AudioState.DETECT:
         await stream_audio_bytes(websocket, m.text)
     elif m.type == MessageType.LISTEN and m.state == AudioState.START:
+        user_audio_input.clear()
         return
     elif m.type == MessageType.LISTEN and m.state == AudioState.STOP:
         await reply_to_user_audio_input(websocket)
