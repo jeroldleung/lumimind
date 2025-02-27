@@ -19,10 +19,16 @@ class AudioState(Enum):
     SENTENCE_START = "sentence_start"
 
 
+class ListeningMode(Enum):
+    AUTO = "auto"
+    MANUAL = "manual"
+    REALTIME = "realtime"
+
+
 class MessageToClient(BaseModel):
     type: MessageType
     transport: str | None = "websocket"
-    audio_params: dict[str, int] | None = {"sample_rate": 16000}
+    audio_params: dict[str, int] | None = {"sample_rate": 24000}
     state: AudioState | None = None
     text: str | None = None
     emotion: str | None = None
@@ -35,6 +41,6 @@ class MessageFromClient(BaseModel):
     audio_params: dict[str, str | int] | None = None
     session_id: str | None = None
     state: AudioState | None = None
-    mode: str | None = None
+    mode: ListeningMode | None = None
     text: str | None = None
     reason: str | None = None

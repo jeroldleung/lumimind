@@ -3,3 +3,6 @@ websockets==15.0
 python-dotenv==1.0.1
 numpy==2.2.3
 loguru==0.7.3
+funasr==1.2.4
+torch==2.6.0
+torchaudio==2.6.0
