@@ -10,16 +10,9 @@ from funasr import AutoModel
 from funasr.utils.postprocess_utils import rich_transcription_postprocess
 from pydub import AudioSegment
 
-asr_path = os.path.join(os.getcwd(), "models/asr")
-vad_path = os.path.join(os.getcwd(), "models/vad")
-
-model = AutoModel(
-    model=asr_path,
-    disable_update=True,
-    vad_model=vad_path,
-    vad_kwargs={"max_single_segment_time": 30000},
-    device="cuda:0",
-)
+cwd = os.getcwd()
+asr_model = AutoModel(model=os.path.join(cwd, "models/asr"), disable_update=True)
+vad_model = AutoModel(model=os.path.join(cwd, "models/vad"), disable_update=True)
 
 
 def wav_to_opus(audio_str: str) -> Generator[bytes, None, None]:
@@ -52,6 +45,6 @@ def opus_to_pcm(opus_bytes: bytes) -> bytes:
 
 
 def audio_to_text(audio_bytes: bytes) -> str:
-    res = model.generate(input=audio_bytes)
+    res = asr_model.generate(input=audio_bytes)
     text = rich_transcription_postprocess(res[0]["text"])
     return text
