@@ -48,3 +48,21 @@ def audio_to_text(audio_bytes: bytes) -> str:
     res = asr_model.generate(input=audio_bytes)
     text = rich_transcription_postprocess(res[0]["text"])
     return text
+
+
+cache = {}
+
+
+def is_silence(opus_bytes: bytes) -> bool:
+    pcm_frame = opus_to_pcm(opus_bytes)
+    res = vad_model.generate(
+        input=pcm_frame,
+        cache=cache,
+        chunk_size=60,
+        max_single_segment_time=500,
+    )
+    val = res[0]["value"]
+    if len(val) > 0:
+        if val[0][0] > 0 and val[0][1] == -1:
+            print(res)
+            return True

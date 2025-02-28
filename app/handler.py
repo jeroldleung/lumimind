@@ -5,7 +5,7 @@ from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosedOK
 
-from .audio import audio_to_text, opus_to_pcm, wav_to_opus
+from .audio import audio_to_text, is_silence, opus_to_pcm, wav_to_opus
 from .llm import stream_llm_output
 from .schemas import AudioState, MessageToClient, MessageType
 from .utils import message_from_client, message_to_client
@@ -21,7 +21,7 @@ async def handshake(websocket: ServerConnection):
     volume = {
         "type": "iot",
         "commands": [
-            {"name": "Speaker", "method": "SetVolume", "parameters": {"volume": 75}}
+            {"name": "Speaker", "method": "SetVolume", "parameters": {"volume": 50}}
         ],
     }
     await websocket.send(json.dumps(volume))
@@ -62,7 +62,7 @@ async def stream_audio_bytes(websocket: ServerConnection, user_input: str):
 
 
 async def reply_to_user_audio_input(websocket: ServerConnection):
-    if len(user_audio_input) <= 0:
+    if len(user_audio_input) == 0:
         return
 
     pcm_bytes = b""
@@ -72,6 +72,7 @@ async def reply_to_user_audio_input(websocket: ServerConnection):
     logger.info(f"Message from client {websocket.id}: {user_input}")
 
     await stream_audio_bytes(websocket, user_input)
+    user_audio_input.clear()
 
 
 async def handle_text_message(websocket: ServerConnection, msg: str):
@@ -81,16 +82,19 @@ async def handle_text_message(websocket: ServerConnection, msg: str):
     if m.type == MessageType.HELLO:
         await handshake(websocket)
     elif m.type == MessageType.LISTEN and m.state == AudioState.DETECT:
+        logger.info(f"Wake up client {websocket.id}: {m.text}")
         await stream_audio_bytes(websocket, m.text)
     elif m.type == MessageType.LISTEN and m.state == AudioState.START:
-        user_audio_input.clear()
-        return
-    elif m.type == MessageType.LISTEN and m.state == AudioState.STOP:
-        await reply_to_user_audio_input(websocket)
+        pass
+    elif m.type == MessageType.LISTEN and m.state == AudioState.START:
+        pass
 
 
-async def handle_audio_message(opus_bytes: bytes):
+async def handle_audio_message(websocket: ServerConnection, opus_bytes: bytes):
     user_audio_input.append(opus_bytes)
+    if is_silence(opus_bytes):
+        await reply_to_user_audio_input(websocket)
+        user_audio_input.clear()
 
 
 async def handle_connection(websocket: ServerConnection):
@@ -102,7 +106,7 @@ async def handle_connection(websocket: ServerConnection):
             if isinstance(msg, str):
                 await handle_text_message(websocket, msg)
             elif isinstance(msg, bytes):
-                await handle_audio_message(msg)
+                await handle_audio_message(websocket, msg)
         except ConnectionClosedOK:
             break
 
