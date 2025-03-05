@@ -2,4 +2,4 @@
 
 lint:
 		ruff format
-		ruff check --fix --select I,E,W,F,B
+		ruff check --fix

@@ -1,0 +1,27 @@
+[project]
+name = "liiaa"
+version = "0.1.0"
+description = "A websocket server that voice chat with llm."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "loguru>=0.7.3",
+    "openai>=1.65.3",
+    "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.1",
+    "websockets>=15.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.9",
+]
+
+[tool.ruff.lint]
+select = [
+    "I", # isort
+    "E", # pycodestyle error
+    "W", # pycodestyle warning
+    "F", # pyflakes
+    "B", # flake8-bugbear
+]
