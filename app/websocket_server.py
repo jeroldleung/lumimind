@@ -1,10 +1,10 @@
 from websockets.asyncio.server import serve
 
-from .handler import handle_connection
+from .router import Router
 
 
 class WebsocketServer:
     @staticmethod
     async def start():
-        async with serve(handle_connection, "0.0.0.0", 8000) as server:
+        async with serve(Router.route, "0.0.0.0", 8000) as server:
             await server.serve_forever()
