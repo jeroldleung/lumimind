@@ -7,3 +7,5 @@ class Settings(BaseSettings):
     LLM_BASE_URL: str
     LLM_API_KEY: str
     LLM_MODEL: str
+
+    ASR_LOCAL_PATH: str
