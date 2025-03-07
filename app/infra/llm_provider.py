@@ -10,7 +10,7 @@ class LLMProvider:
     def __init__(self, *, base_url: str, api_key: str, model: str):
         self.client = OpenAI(base_url=base_url, api_key=api_key)
         self.model = model
-        self.tools: list[ChatCompletionToolParam] | None = None
+        self.tools: list[ChatCompletionToolParam] = []
 
     def registry_tools(self, tools: list[ChatCompletionToolParam]):
         for t in tools:

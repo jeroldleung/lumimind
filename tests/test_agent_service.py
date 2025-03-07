@@ -1,5 +1,5 @@
 from app.config import settings
-from app.infra import LLMProvider
+from app.infra import IOTProvider, LLMProvider
 from app.services import AgentService
 
 llm_client = LLMProvider(
@@ -7,10 +7,11 @@ llm_client = LLMProvider(
     api_key=settings.LLM_API_KEY,
     model=settings.LLM_MODEL,
 )
-agent_service = AgentService(llm_client=llm_client)
+iot_client = IOTProvider(settings.IOT_SERVICE_URL)
+agent_service = AgentService(llm_client, iot_client)
 
 
-def test_chat_completion():
-    prompt = "echo: this is a test"
-    res = agent_service.chat_completion(prompt)
-    assert "this is a test" in res.lower()
+def test_tool_calling():
+    instruction = "turn on the light"
+    res = agent_service.chat_completion(instruction)
+    assert res
