@@ -4,7 +4,7 @@ from websockets.asyncio.server import serve
 from .config import settings
 from .core.connection_handler import ConnectionHandler
 from .infra import ASRProvider, LLMProvider
-from .services import AudioService, ChatService
+from .services import AgentService, AudioService
 
 
 class WebsocketServer:
@@ -20,10 +20,10 @@ class WebsocketServer:
 
         # service initialize
         audio_service = AudioService(asr_client)
-        chat_service = ChatService(llm_client)
+        agent_service = AgentService(llm_client)
 
         # singleton services inject to handler
-        ConnectionHandler.inject(audio_service, chat_service)
+        ConnectionHandler.inject(audio_service, agent_service)
 
         async with serve(ConnectionHandler.instantiate, "0.0.0.0", 8000) as server:
             logger.success("Server started")

@@ -1,7 +1,7 @@
 from typing import Any
 
 
-class ChatService:
+class AgentService:
     def __init__(self, llm_client: Any):
         self.client = llm_client
         self.messages = [{"role": "system", "content": "You are a helpful assistant."}]

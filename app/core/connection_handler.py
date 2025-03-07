@@ -2,14 +2,14 @@ from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
-from app.services import AudioService, ChatService
+from app.services import AgentService, AudioService
 
 from .schemas import AudioState, MessageIn, MessageOut, MessageType
 
 
 class ConnectionHandler:
     audio_service: AudioService = None
-    chat_service: ChatService = None
+    agent_service: AgentService = None
 
     def __init__(self, websocket: ServerConnection):
         self.websocket = websocket
@@ -18,7 +18,6 @@ class ConnectionHandler:
     async def response_text(self, m_out: MessageOut):
         m_out = m_out.model_dump_json(exclude_unset=True)
         await self.websocket.send(m_out)
-        logger.debug(f"Message out: {m_out}")
 
     async def handle_text(self, m_in: str):
         logger.debug(f"Message in: {m_in}")
@@ -38,7 +37,7 @@ class ConnectionHandler:
                 return
             asr_text = ConnectionHandler.audio_service.speech2text(self.audio_in)
             logger.info(f"Client audio message: {asr_text}")
-            chat_completion = ConnectionHandler.chat_service.chat_completion(asr_text)
+            chat_completion = ConnectionHandler.agent_service.chat_completion(asr_text)
             m_out = MessageOut(
                 type=MessageType.TTS,
                 state=AudioState.SENTENCE_START,
@@ -62,16 +61,16 @@ class ConnectionHandler:
                 break
 
     @classmethod
-    def inject(cls, audio_service: AudioService, chat_service: ChatService):
+    def inject(cls, audio_service: AudioService, agent_service: AgentService):
         cls.audio_service = audio_service
-        cls.chat_service = chat_service
+        cls.agent_service = agent_service
 
     @staticmethod
     async def instantiate(websocket: ServerConnection):
         if ConnectionHandler.audio_service is None:
             logger.error("Audio Service is not injected")
-        print(ConnectionHandler.chat_service)
-        if ConnectionHandler.chat_service is None:
+        print(ConnectionHandler.agent_service)
+        if ConnectionHandler.agent_service is None:
             logger.error("Chat Service is not injected")
 
         # create a handler instance for each websocket connection
