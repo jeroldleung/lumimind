@@ -12,7 +12,7 @@ class LLMProvider:
         self.model = model
         self.tools: list[ChatCompletionToolParam] | None = None
 
-    def registry_tools(self, *tools: ChatCompletionToolParam):
+    def registry_tools(self, tools: list[ChatCompletionToolParam]):
         for t in tools:
             self.tools.append(pydantic_function_tool(t))
 
