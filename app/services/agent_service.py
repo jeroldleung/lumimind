@@ -8,6 +8,7 @@ class AgentService:
 
     def chat_completion(self, user_input: str) -> str:
         self.messages.append({"role": "user", "content": user_input})
-        res = self.llm_client.chat_completion(self.messages)
-        self.messages.append({"role": "assistant", "content": "res"})
-        return res
+        msg = self.llm_client.chat_completion(messages=self.messages)
+        if msg.content is not None:
+            self.messages.append({"role": "assistant", "content": msg.content})
+            return msg.content

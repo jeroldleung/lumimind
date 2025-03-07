@@ -1,5 +1,9 @@
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat import (
+    ChatCompletionMessage,
+    ChatCompletionMessageParam,
+    ChatCompletionToolParam,
+)
 
 
 class LLMProvider:
@@ -7,9 +11,14 @@ class LLMProvider:
         self.client = OpenAI(base_url=base_url, api_key=api_key)
         self.model = model
 
-    def chat_completion(self, messages: list[ChatCompletionMessageParam]) -> str:
+    def chat_completion(
+        self,
+        *,
+        messages: list[ChatCompletionMessageParam],
+        tools: list[ChatCompletionToolParam] | None = None,
+    ) -> ChatCompletionMessage:
         completion = self.client.chat.completions.create(
-            model=self.model, messages=messages
+            model=self.model, messages=messages, tools=tools
         )
-        res = completion.choices[0].message.content
+        res = completion.choices[0].message
         return res
