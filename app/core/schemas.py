@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -25,16 +26,17 @@ class ListeningMode(Enum):
     REALTIME = "realtime"
 
 
-class MessageToClient(BaseModel):
+class MessageOut(BaseModel):
     type: MessageType
-    transport: str | None = "websocket"
-    audio_params: dict[str, int] | None = {"sample_rate": 24000}
+    transport: str | None = None
+    audio_params: dict[str, int] | None = None
     state: AudioState | None = None
     text: str | None = None
     emotion: str | None = None
+    commands: list[dict[str, Any]] | None = None
 
 
-class MessageFromClient(BaseModel):
+class MessageIn(BaseModel):
     type: MessageType
     version: int | None = None
     transport: str | None = None
