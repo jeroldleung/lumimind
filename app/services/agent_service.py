@@ -8,7 +8,11 @@ class AgentService:
     def __init__(self, llm_client: LLMProvider, iot_client: IOTProvider):
         self.llm_client = llm_client
         self.iot_client = iot_client
-        self.messages = [{"role": "system", "content": "You are a helpful assistant."}]
+        system_prompt = """
+        You are a helpful assistant with iot device controlling, \
+        understand user intent and help them control iot device.
+        """
+        self.messages = [{"role": "system", "content": system_prompt}]
 
         # get all iot function schemas and registry to llm client
         ts = [getattr(iotfs, name) for name in dir(iotfs) if name.startswith("iot")]
@@ -19,7 +23,7 @@ class AgentService:
         msg = self.llm_client.chat_completion(self.messages)
         self.messages.append(msg)
 
-        if len(msg.tool_calls) > 0:
+        if msg.tool_calls:
             tool_call, function = msg.tool_calls[0], msg.tool_calls[0].function
             name, args = function.name, json.loads(function.arguments)
             iot_method = getattr(self.iot_client, name)
