@@ -7,7 +7,7 @@ class IOTProvider:
     def __init__(self, url: str):
         self.url = url
 
-    def iot_turn_on(self, on: bool) -> bool:
+    def iot_turn_on(self, on: bool) -> str:
         headers = {
             "Content-Type": "application/json",
             "Accept": "*/*",
@@ -23,5 +23,5 @@ class IOTProvider:
             self.url,
             headers=headers,
             data=json.dumps(data),
-        ).json()
-        return res["success"]
+        )
+        return res.text
