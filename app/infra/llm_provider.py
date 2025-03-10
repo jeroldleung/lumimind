@@ -1,6 +1,6 @@
 from openai import OpenAI, pydantic_function_tool
 from openai.types.chat import (
-    ChatCompletionMessage,
+    ChatCompletionChunk,
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
@@ -18,9 +18,11 @@ class LLMProvider:
 
     def chat_completion(
         self, messages: list[ChatCompletionMessageParam]
-    ) -> ChatCompletionMessage:
-        completion = self.client.chat.completions.create(
-            model=self.model, messages=messages, tools=self.tools
+    ) -> list[ChatCompletionChunk]:
+        stream = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            tools=self.tools,
+            stream=True,
         )
-        res = completion.choices[0].message
-        return res
+        return stream
