@@ -8,8 +8,10 @@ from .services import AgentService, AudioService
 
 
 class WebsocketServer:
-    @staticmethod
-    async def start():
+    def __init__(self, host: str, port: int):
+        self.host = host
+        self.port = port
+
         # client initialize
         asr_client = ASRProvider(local_path=settings.ASR_LOCAL_PATH)
         llm_client = LLMProvider(
@@ -23,9 +25,10 @@ class WebsocketServer:
         audio_service = AudioService(asr_client)
         agent_service = AgentService(llm_client, iot_client)
 
-        # singleton services inject to handler
+        # singleton services are injected to connection handler
         ConnectionHandler.inject(audio_service, agent_service)
 
-        async with serve(ConnectionHandler.instantiate, "0.0.0.0", 8000) as server:
+    async def start(self):
+        async with serve(ConnectionHandler.instantiate, self.host, self.port) as server:
             logger.success("Server started")
             await server.serve_forever()
