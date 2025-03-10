@@ -12,3 +12,6 @@ pretrained_models
 
 # pytest
 .pytest_cache
+
+# vscode
+.vscode
