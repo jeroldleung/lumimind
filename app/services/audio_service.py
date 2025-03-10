@@ -1,15 +1,17 @@
 import base64
 from io import BytesIO
-from typing import Any, Generator
+from typing import Generator
 
 import numpy as np
 import opuslib
 import soundfile as sf
 from pydub import AudioSegment
 
+from app.infra import ASRProvider
+
 
 class AudioService:
-    def __init__(self, asr_client: Any):
+    def __init__(self, asr_client: ASRProvider):
         self.asr_client = asr_client
 
     def speech2text(self, opus_bytes: list[bytes]) -> str:
