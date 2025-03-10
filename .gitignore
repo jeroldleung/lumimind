@@ -9,3 +9,6 @@ __pycache__
 
 # pretrained models
 pretrained_models
+
+# pytest
+.pytest_cache

@@ -9,3 +9,5 @@ class Settings(BaseSettings):
     LLM_MODEL: str
 
     ASR_LOCAL_PATH: str
+
+    IOT_SERVICE_URL: str
