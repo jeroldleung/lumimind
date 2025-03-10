@@ -22,28 +22,36 @@ class ConnectionHandler:
     async def handle_text(self, m_in: str):
         logger.debug(f"Message in: {m_in}")
         m = MessageIn.model_validate_json(m_in)
+
+        # handshake with the client
         if m.type == MessageType.HELLO:
-            m_out = MessageOut(
-                type=MessageType.HELLO,
-                transport="websocket",
-                audio_params={"sample_rate": 16000},
+            await self.response_text(
+                MessageOut(
+                    type=MessageType.HELLO,
+                    transport="websocket",
+                    audio_params={"sample_rate": 16000},
+                )
             )
-            await self.response_text(m_out)
-            logger.info("Handshake with client")
+            logger.info("Handshake with the client")
+
+        # capture opus bytes from the device
         elif m.type == MessageType.LISTEN and m.state == AudioState.START:
             self.audio_in.clear()
+
+        # response to the client
         elif m.type == MessageType.LISTEN and m.state == AudioState.STOP:
             if len(self.audio_in) == 0:
                 return
             asr_text = ConnectionHandler.audio_service.speech2text(self.audio_in)
             logger.info(f"Client audio message: {asr_text}")
             chat_completion = ConnectionHandler.agent_service.chat_completion(asr_text)
-            m_out = MessageOut(
-                type=MessageType.TTS,
-                state=AudioState.SENTENCE_START,
-                text=chat_completion,
+            await self.response_text(
+                MessageOut(
+                    type=MessageType.TTS,
+                    state=AudioState.SENTENCE_START,
+                    text=chat_completion,
+                )
             )
-            await self.response_text(m_out)
             logger.info(f"Response to client: {chat_completion}")
 
     async def handle_binary(self, m_in: bytes):
