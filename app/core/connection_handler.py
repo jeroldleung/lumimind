@@ -4,7 +4,7 @@ from websockets.exceptions import ConnectionClosed
 
 from app.services import AgentService, AudioService
 
-from .schemas import AudioState, MessageIn, MessageOut, MessageType
+from ..schemas.iot_message_schemas import AudioState, MessageIn, MessageOut, MessageType
 
 
 class ConnectionHandler:
