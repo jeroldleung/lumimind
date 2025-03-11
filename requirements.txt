@@ -1,0 +1,15 @@
+-r third_party/CosyVoice/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host=mirrors.aliyun.com
+
+openai
+websockets
+python-dotenv
+numpy
+loguru
+funasr
+torch
+torchaudio
+soundfile
+opuslib
+pydub
+pydantic
+pydantic-settings
