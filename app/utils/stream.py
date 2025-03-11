@@ -1,3 +1,5 @@
+from typing import Generator
+
 from openai.types.chat import ChatCompletionChunk
 
 
@@ -15,3 +17,8 @@ def accumulate_streaming(stream: list[ChatCompletionChunk]) -> tuple[str, list]:
             if args is not None:
                 final_tool_calls[index].function.arguments += args
     return text_res, list(final_tool_calls.values())
+
+
+def stream_content(content: str) -> Generator[str, None, None]:
+    for w in content.split():
+        yield w

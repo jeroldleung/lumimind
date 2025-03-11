@@ -1,4 +1,5 @@
 import io
+from typing import Generator
 
 import dashscope
 from dashscope.audio.tts_v2 import AudioFormat, ResultCallback, SpeechSynthesizer
@@ -29,10 +30,12 @@ class TTSProvider:
         self.callback = CallBack()
         self.synthesizer = SpeechSynthesizer(
             model=model,
-            voice="longxiaochun",
+            voice="longxiaoxia_v2",
             format=AudioFormat.PCM_16000HZ_MONO_16BIT,
             callback=self.callback,
         )
 
-    def text2speech(self, text: str):
-        self.synthesizer.streaming_call(text)
+    def text2speech(self, stream_text: Generator[str, None, None]):
+        for text in stream_text:
+            self.synthesizer.streaming_call(text)
+        self.synthesizer.streaming_complete()
