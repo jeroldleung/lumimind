@@ -6,3 +6,6 @@ lint:
 
 test:
 		pytest tests
+
+clean:
+		find app tests | grep __pycache__ | xargs rm -rf
