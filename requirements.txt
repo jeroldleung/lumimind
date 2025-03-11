@@ -1,8 +1,5 @@
--r third_party/CosyVoice/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host=mirrors.aliyun.com
-
 openai
-websockets
-python-dotenv
+websockets==15.0.1
 numpy
 loguru
 funasr
