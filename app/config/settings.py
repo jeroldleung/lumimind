@@ -10,4 +10,7 @@ class Settings(BaseSettings):
 
     ASR_LOCAL_PATH: str
 
+    TTS_API_KEY: str
+    TTS_MODEL: str
+
     IOT_SERVICE_URL: str
