@@ -26,13 +26,13 @@ class AudioService:
         wav_bytes = base64.b64decode(audio_str)  # decoded audio string to audio bytes
         audio_np = np.frombuffer(wav_bytes, dtype=np.int16)
         wav_buf = BytesIO()
-        sf.write(wav_buf, audio_np, samplerate=24000, format="wav")
+        sf.write(wav_buf, audio_np, samplerate=16000, format="wav")
         audio = AudioSegment.from_file(wav_buf, format="wav")  # load wav data
-        audio.set_channels(1).set_frame_rate(24000)
-        encoder = opuslib.Encoder(24000, 1, opuslib.APPLICATION_AUDIO)
+        audio.set_channels(1).set_frame_rate(16000)
+        encoder = opuslib.Encoder(16000, 1, opuslib.APPLICATION_AUDIO)
 
         frame_duration = 60  # 60ms per frame
-        frame_size = int(24000 * frame_duration / 1000)
+        frame_size = int(16000 * frame_duration / 1000)
         raw_data = audio.raw_data
 
         for i in range(0, len(raw_data), frame_size * 2):
