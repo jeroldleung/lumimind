@@ -7,7 +7,7 @@ import opuslib
 import soundfile as sf
 from pydub import AudioSegment
 
-from app.infra import ASRProvider
+from ..infra import ASRProvider
 
 
 class AudioService:

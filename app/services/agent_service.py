@@ -1,8 +1,8 @@
 import json
 
-import app.schemas.iot_function_schemas as iotfs
-from app.infra import IOTProvider, LLMProvider
-from app.utils.stream import accumulate_streaming
+from ..infra import IOTProvider, LLMProvider
+from ..schemas import iot_function_schemas as iotfs
+from ..utils.stream import accumulate_streaming
 
 
 class AgentService:

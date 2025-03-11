@@ -2,9 +2,8 @@ from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
-from app.services import AgentService, AudioService
-
 from ..schemas.iot_message_schemas import AudioState, MessageIn, MessageOut, MessageType
+from ..services import AgentService, AudioService
 
 
 class ConnectionHandler:
