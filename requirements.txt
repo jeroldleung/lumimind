@@ -6,7 +6,10 @@ funasr
 torch
 torchaudio
 soundfile
-opuslib
+opuslib==3.0.1
 pydub
 pydantic
 pydantic-settings
+modelscope
+requests
+dashscope
