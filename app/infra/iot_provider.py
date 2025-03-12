@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Dict
 
 import requests
 
@@ -8,7 +8,7 @@ class IOTProvider:
     def __init__(self, url: str):
         self.url = url
 
-    def iot_turn_on(self, args: dict[str, Any]) -> str:
+    def iot_turn_on(self, args: Dict[str, Any]) -> str:
         headers = {
             "Content-Type": "application/json",
             "Accept": "*/*",

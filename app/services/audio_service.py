@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import Generator
+from typing import Generator, List
 
 import numpy as np
 import opuslib
@@ -14,7 +14,7 @@ class AudioService:
         self.asr_client = asr_client
         self.tts_client = tts_client
 
-    def speech2text(self, opus_bytes: list[bytes]) -> str:
+    def speech2text(self, opus_bytes: List[bytes]) -> str:
         decoder = opuslib.Decoder(16000, 1)  # 16000 sample rate and 1 channel
         pcm_frame = b""
         for piece in opus_bytes:

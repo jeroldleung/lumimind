@@ -1,9 +1,9 @@
-from typing import Generator
+from typing import Generator, List, Tuple
 
 from openai.types.chat import ChatCompletionChunk
 
 
-def accumulate_streaming(stream: list[ChatCompletionChunk]) -> tuple[str, list]:
+def accumulate_streaming(stream: List[ChatCompletionChunk]) -> Tuple[str, List]:
     text_res, final_tool_calls = "", {}
     for chunk in stream:
         if chunk.choices[0].delta.content is not None:

@@ -1,3 +1,5 @@
+from typing import List
+
 from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
@@ -7,12 +9,12 @@ from ..services import AgentService, AudioService
 
 
 class ConnectionHandler:
-    audio_service: AudioService = None
-    agent_service: AgentService = None
+    audio_service: AudioService | None = None
+    agent_service: AgentService | None = None
 
     def __init__(self, websocket: ServerConnection):
         self.websocket = websocket
-        self.audio_in: list[bytes] = []
+        self.audio_in: List[bytes] = []
 
     async def response_text(self, m_out: MessageOut):
         m_out = m_out.model_dump_json(exclude_unset=True)

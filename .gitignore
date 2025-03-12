@@ -3,6 +3,7 @@
 .env
 __pycache__
 .ruff_cache
+.mypy_cache
 
 # macos
 .DS_Store
