@@ -16,9 +16,9 @@ class IOTProvider:
             "Connection": "keep-alive",
         }
         data = {
-            "action": "device",
+            "action": "group",
             "gatewayId": "e816564f9315",
-            "param": {"id": "2", "config": [{"CF_OnOff": args["on"]}]},
+            "param": {"id": "", "config": [{"CF_OnOff": args["on"]}]},
         }
         res = requests.get(
             self.url,

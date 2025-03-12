@@ -9,11 +9,11 @@ audio_service = AudioService(asr_client, tts_client)
 
 
 def test_text_to_speech():
-    text = "How is going today"
+    text = "Hello"
     text_stream = stream_content(text)
     audio_bytes = []
     audio_bytes_stream = audio_service.text2speech(text_stream)
     for ab in audio_bytes_stream:
         audio_bytes.append(ab)
     res = audio_service.speech2text(audio_bytes).lower()
-    assert res
+    assert "hello" in res

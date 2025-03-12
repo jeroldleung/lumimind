@@ -1,4 +1,5 @@
-from typing import List
+import asyncio
+from typing import Generator, List
 
 from loguru import logger
 from websockets.asyncio.server import ServerConnection
@@ -6,6 +7,7 @@ from websockets.exceptions import ConnectionClosed
 
 from ..schemas.iot_message_schemas import AudioState, MessageIn, MessageOut, MessageType
 from ..services import AgentService, AudioService
+from ..utils.stream import stream_content
 
 
 class ConnectionHandler:
@@ -20,19 +22,29 @@ class ConnectionHandler:
         m_out = m_out.model_dump_json(exclude_unset=True)
         await self.websocket.send(m_out)
 
+    async def response_audio(self, audio_stream: Generator[bytes, None, None]):
+        m_out = MessageOut(type=MessageType.TTS, state=AudioState.START)
+        await self.response_text(m_out)
+        n_wait_ms = 0
+        for audio_bytes in audio_stream:
+            n_wait_ms += 1
+            await self.websocket.send(audio_bytes)
+        await asyncio.sleep(n_wait_ms * 60 / 1000)  # wait until the audio finishes
+        m_out = MessageOut(type=MessageType.TTS, state=AudioState.STOP)
+        await self.response_text(m_out)
+
     async def handle_text(self, m_in: str):
         logger.debug(f"Message in: {m_in}")
         m = MessageIn.model_validate_json(m_in)
 
         # handshake with the client
         if m.type == MessageType.HELLO:
-            await self.response_text(
-                MessageOut(
-                    type=MessageType.HELLO,
-                    transport="websocket",
-                    audio_params={"sample_rate": 16000},
-                )
+            m_out = MessageOut(
+                type=MessageType.HELLO,
+                transport="websocket",
+                audio_params={"sample_rate": 16000},
             )
+            await self.response_text(m_out)
             logger.info("Handshake with the client")
 
         # capture opus bytes from the device
@@ -46,14 +58,16 @@ class ConnectionHandler:
             asr_text = ConnectionHandler.audio_service.speech2text(self.audio_in)
             logger.info(f"Client audio message: {asr_text}")
             chat_completion = ConnectionHandler.agent_service.chat_completion(asr_text)
-            await self.response_text(
-                MessageOut(
-                    type=MessageType.TTS,
-                    state=AudioState.SENTENCE_START,
-                    text=chat_completion,
-                )
+            m_out = MessageOut(
+                type=MessageType.TTS,
+                state=AudioState.SENTENCE_START,
+                text=chat_completion,
             )
+            await self.response_text(m_out)
             logger.info(f"Response to client: {chat_completion}")
+            text_stream = stream_content(chat_completion)
+            audio_stream = ConnectionHandler.audio_service.text2speech(text_stream)
+            await self.response_audio(audio_stream)
 
     async def handle_binary(self, m_in: bytes):
         self.audio_in.append(m_in)

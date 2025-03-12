@@ -3,7 +3,7 @@ from websockets.asyncio.server import serve
 
 from .config import settings
 from .core.connection_handler import ConnectionHandler
-from .infra import ASRProvider, IOTProvider, LLMProvider
+from .infra import ASRProvider, IOTProvider, LLMProvider, TTSProvider
 from .services import AgentService, AudioService
 
 
@@ -14,6 +14,7 @@ class WebsocketServer:
 
         # client initialize
         asr_client = ASRProvider(local_path=settings.ASR_LOCAL_PATH)
+        tts_client = TTSProvider(settings.TTS_API_KEY, settings.TTS_MODEL)
         llm_client = LLMProvider(
             base_url=settings.LLM_BASE_URL,
             api_key=settings.LLM_API_KEY,
@@ -22,7 +23,7 @@ class WebsocketServer:
         iot_client = IOTProvider(settings.IOT_SERVICE_URL)
 
         # service initialize
-        audio_service = AudioService(asr_client)
+        audio_service = AudioService(asr_client, tts_client)
         agent_service = AgentService(llm_client, iot_client)
 
         # singleton services are injected to connection handler

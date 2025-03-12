@@ -9,10 +9,8 @@ class AgentService:
     def __init__(self, llm_client: LLMProvider, iot_client: IOTProvider):
         self.llm_client = llm_client
         self.iot_client = iot_client
-        system_prompt = """
-        You are a helpful assistant with iot device controlling, \
-        understand user intent and help them control iot device.
-        """
+        with open("assets/agent_prompt_text.txt") as f:
+            system_prompt = f.read()
         self.messages = [{"role": "system", "content": system_prompt}]
 
         # get all iot function schemas and registry to llm client
