@@ -23,12 +23,11 @@ class AgentService:
         self.messages.append({"role": "user", "content": user_input})
         stream_msg = self.llm_client.chat_completion(self.messages)
         content, tool_calls = accumulate_streaming(stream_msg)
-        self.messages.append(
-            {"role": "assistant", "content": content, "tool_calls": tool_calls}
-        )
+        self.messages.append({"role": "assistant", "content": content})
 
         # calling tools
         if tool_calls:
+            self.messages[-1]["tool_calls"] = tool_calls
             tool_call, function = tool_calls[0], tool_calls[0].function
             name, args = function.name, json.loads(function.arguments)
             iot_method = getattr(self.iot_client, name)
