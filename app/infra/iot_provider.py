@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Dict
 
 import requests
 
@@ -8,7 +8,7 @@ class IOTProvider:
     def __init__(self, url: str):
         self.url = url
 
-    def iot_turn_on(self, args: dict[str, Any]) -> str:
+    def iot_turn_on(self, args: Dict[str, Any]) -> str:
         headers = {
             "Content-Type": "application/json",
             "Accept": "*/*",
@@ -16,9 +16,9 @@ class IOTProvider:
             "Connection": "keep-alive",
         }
         data = {
-            "action": "device",
+            "action": "group",
             "gatewayId": "e816564f9315",
-            "param": {"id": "2", "config": [{"CF_OnOff": args["on"]}]},
+            "param": {"id": "", "config": [{"CF_OnOff": args["on"]}]},
         }
         res = requests.get(
             self.url,

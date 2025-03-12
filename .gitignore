@@ -3,6 +3,7 @@
 .env
 __pycache__
 .ruff_cache
+.mypy_cache
 
 # macos
 .DS_Store
@@ -12,3 +13,6 @@ pretrained_models
 
 # pytest
 .pytest_cache
+
+# vscode
+.vscode
