@@ -1,4 +1,4 @@
-.PHONY: lint
+.PHONY: lint test clean
 
 lint:
 		ruff format --exclude third_party
