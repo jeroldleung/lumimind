@@ -24,19 +24,19 @@ class TTSProvider:
         dashscope.api_key = api_key
         self.model = model
         self.callback = CallBack()
-        self.synthesizer = SpeechSynthesizer(
+
+    def text2speech(
+        self, stream_text: Generator[str, None, None]
+    ) -> Generator[bytes, None, None]:
+        synthesizer = SpeechSynthesizer(
             model=self.model,
             voice="longxiaoxia_v2",
             format=AudioFormat.WAV_16000HZ_MONO_16BIT,
             callback=self.callback,
         )
-
-    def text2speech(
-        self, stream_text: Generator[str, None, None]
-    ) -> Generator[bytes, None, None]:
         for text in stream_text:
-            self.synthesizer.streaming_call(text)
-        self.synthesizer.streaming_complete()
+            synthesizer.streaming_call(text)
+        synthesizer.streaming_complete()
 
         for chunk in self.callback.byte_queue:
             yield chunk
