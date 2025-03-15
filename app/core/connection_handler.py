@@ -1,4 +1,3 @@
-import asyncio
 from typing import Generator, List
 
 from loguru import logger
@@ -29,7 +28,6 @@ class ConnectionHandler:
         for audio_bytes in audio_stream:
             n_wait_ms += 1
             await self.websocket.send(audio_bytes)
-        await asyncio.sleep(n_wait_ms * 60 / 1000)  # wait until the audio finishes
         m_out = MessageOut(type=MessageType.TTS, state=AudioState.STOP)
         await self.response_text(m_out)
 

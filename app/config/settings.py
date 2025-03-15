@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     ASR_LOCAL_PATH: str
 
+    TTS_BASE_URL: str
     TTS_API_KEY: str
     TTS_MODEL: str
 
