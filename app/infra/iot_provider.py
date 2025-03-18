@@ -18,9 +18,12 @@ class IOTProvider:
         data = {
             "action": "group",
             "gatewayId": "e816564f9315",
-            "param": {"id": "", "config": [{"CF_OnOff": args["on"]}]},
+            "param": {
+                "id": "",
+                "config": [{"CF_OnOff": args["on"], "CF_Bright": args["brightness"]}],
+            },
         }
-        res = requests.get(
+        res = requests.post(
             self.url,
             headers=headers,
             data=json.dumps(data),
