@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict
 
 import requests
+from loguru import logger
 
 
 class IOTProvider:
@@ -16,13 +17,14 @@ class IOTProvider:
             "Connection": "keep-alive",
         }
         data = {
-            "action": "group",
+            "action": args["action"],
             "gatewayId": "e816564f9315",
             "param": {
-                "id": "",
+                "id": args["id"],
                 "config": [{"CF_OnOff": args["on"], "CF_Bright": args["brightness"]}],
             },
         }
+        logger.debug(data)
         res = requests.post(
             self.url,
             headers=headers,
