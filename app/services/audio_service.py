@@ -18,10 +18,6 @@ class AudioService:
             pcm_frame += decoder.decode(piece, 960)
         return self.asr_client.speech2text(pcm_frame)
 
-    def text2speech(
-        self, text_stream: Generator[str, None, None]
-    ) -> Generator[bytes, None, None]:
-        audio_stream = self.tts_client.text2speech(text_stream)
-        for wav_bytes in audio_stream:
-            if wav_bytes is not None:
-                yield from wav_to_opus(wav_bytes)
+    def text2speech(self, text: str) -> Generator[bytes, None, None]:
+        audio = self.tts_client.text2speech(text)
+        yield from wav_to_opus(audio)

@@ -6,7 +6,6 @@ from websockets.exceptions import ConnectionClosed
 
 from ..schemas.iot_message_schemas import AudioState, MessageIn, MessageOut, MessageType
 from ..services import AgentService, AudioService
-from ..utils.stream import stream_content
 
 
 class ConnectionHandler:
@@ -63,8 +62,7 @@ class ConnectionHandler:
             )
             await self.response_text(m_out)
             logger.info(f"Response to client: {chat_completion}")
-            text_stream = stream_content(chat_completion)
-            audio_stream = ConnectionHandler.audio_service.text2speech(text_stream)
+            audio_stream = ConnectionHandler.audio_service.text2speech(chat_completion)
             await self.response_audio(audio_stream)
 
     async def handle_binary(self, m_in: bytes):
