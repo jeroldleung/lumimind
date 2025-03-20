@@ -12,5 +12,7 @@ class iot_turn_on(BaseModel):
         ...,
         description="0 is for all, 2 is living room, 4 is kitchen, 5 is bedroom, 6 is wash room",
     )
-    on: bool = Field(..., description="Whether to turn on the iot device")
-    brightness: int = Field(..., description="Brightness of the lamp, from 0 to 100")
+    on: bool | None = Field(..., description="Whether to turn on the iot device")
+    brightness: int | None = Field(
+        ..., description="Brightness of the lamp, from 0 to 100"
+    )

@@ -69,6 +69,9 @@ class ConnectionHandler:
         self.audio_in.append(m_in)
 
     async def handle_message(self):
+        ConnectionHandler.agent_service.messages = (
+            ConnectionHandler.agent_service.messages[:1]
+        )
         while True:
             try:
                 m_in = await self.websocket.recv()
