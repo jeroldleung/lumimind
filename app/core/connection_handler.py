@@ -61,8 +61,8 @@ class ConnectionHandler:
                     return
                 asr_text = ConnectionHandler.audio_service.speech2text(self.audio_in)
                 logger.info(f"Client audio message: {asr_text}")
-                chat_completion = ConnectionHandler.agent_service.chat_completion(
-                    asr_text
+                chat_completion = await ConnectionHandler.agent_service.chat_completion(
+                    self.websocket, asr_text
                 )
                 m_out = MessageOut(
                     type=MessageType.TTS,
