@@ -9,6 +9,7 @@ class ASRProvider:
         self.model = AutoModel(
             model=os.path.join(os.getcwd(), local_path),
             disable_update=True,
+            disable_pbar=True,
         )
 
     def speech2text(self, audio_bytes: bytes) -> str:
