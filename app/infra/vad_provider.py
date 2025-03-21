@@ -1,7 +1,4 @@
-import os
-
 from funasr import AutoModel
-from funasr.utils.postprocess_utils import rich_transcription_postprocess
 
 
 class VADProvider:
@@ -9,4 +6,10 @@ class VADProvider:
         self.model = AutoModel(
             model="pretrained_models/speech_fsmn_vad_zh-cn-16k-common-pytorch",
             disable_update=True,
+            disable_pbar=True,
         )
+        self.chunk_size = 200
+        self.cache = {}
+
+    def reset(self):
+        self.cache = {}
