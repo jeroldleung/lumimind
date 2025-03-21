@@ -2,7 +2,7 @@ from typing import List
 
 from openai import OpenAI, pydantic_function_tool
 from openai.types.chat import (
-    ChatCompletionChunk,
+    ChatCompletion,
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
@@ -21,11 +21,10 @@ class LLMProvider:
 
     def chat_completion(
         self, messages: List[ChatCompletionMessageParam]
-    ) -> List[ChatCompletionChunk]:
-        stream = self.client.chat.completions.create(
+    ) -> ChatCompletion:
+        completion = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             tools=self.tools,
-            stream=True,
         )
-        return stream
+        return completion
