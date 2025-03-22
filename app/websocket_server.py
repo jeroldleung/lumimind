@@ -1,3 +1,6 @@
+import asyncio
+import signal
+
 from loguru import logger
 from websockets.asyncio.server import serve
 
@@ -32,4 +35,8 @@ class WebsocketServer:
     async def start(self):
         async with serve(ConnectionHandler.instantiate, self.host, self.port) as server:
             logger.success("Server started")
-            await server.serve_forever()
+            # Close the server when receiving SIGTERM.
+            loop = asyncio.get_running_loop()
+            loop.add_signal_handler(signal.SIGTERM, server.close)
+            await server.wait_closed()
+            logger.success("Server closed")
