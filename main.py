@@ -3,5 +3,5 @@ import asyncio
 from app import WebsocketServer
 
 if __name__ == "__main__":
-    server = WebsocketServer("0.0.0.0", 8000)
+    server = WebsocketServer()
     asyncio.run(server.start())

@@ -8,9 +8,9 @@ from .services import AgentService, AudioService
 
 
 class WebsocketServer:
-    def __init__(self, host: str, port: int):
-        self.host = host
-        self.port = port
+    def __init__(self):
+        self.host = settings.SERVER_HOST
+        self.port = settings.SERVER_PORT
 
         # client initialize
         asr_client = ASRProvider(local_path=settings.ASR_LOCAL_PATH)
