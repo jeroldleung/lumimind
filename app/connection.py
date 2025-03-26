@@ -1,4 +1,4 @@
-from typing import Generator
+import json
 
 import opuslib
 from loguru import logger
@@ -6,23 +6,18 @@ from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
 from app.asr.sensevoice import SenseVoice
-from app.schemas.iot_message_schemas import (
-    AudioState,
-    MessageIn,
-    MessageOut,
-    MessageType,
-)
-from app.services.agent_service import AgentService
+from app.chat.qwen import Qwen
+from app.memory import Memory
 from app.tts.cosyvoice import CosyVoice
 from app.utils.audio import wav_to_opus
 
 
 class Connection:
-    agent_service: AgentService | None = None
-
-    def __init__(self, conn: ServerConnection, asr: SenseVoice, tts: CosyVoice):
+    def __init__(self, conn: ServerConnection, asr: SenseVoice, chat: Qwen, tts: CosyVoice):
         self.conn = conn
         self.asr = asr
+        self.chat = chat
+        self.mem = Memory()
         self.tts = tts
         self.audio = b""
         self.sample_rate = 16000
@@ -31,70 +26,37 @@ class Connection:
         self.fs = int(self.channel * self.ms * self.sample_rate / 1000)
         self.dec = opuslib.Decoder(self.sample_rate, self.channel)
 
-    async def response_text(self, m_out: MessageOut):
-        m_out = m_out.model_dump_json(exclude_unset=True)
-        await self.conn.send(m_out)
-
-    async def response_audio(self, audio_stream: Generator[bytes, None, None]):
-        m_out = MessageOut(type=MessageType.TTS, state=AudioState.START)
-        await self.response_text(m_out)
-        n_wait_ms = 0
-        for audio_bytes in audio_stream:
-            n_wait_ms += 1
-            await self.conn.send(audio_bytes)
-        m_out = MessageOut(type=MessageType.TTS, state=AudioState.STOP)
-        await self.response_text(m_out)
-
-    async def handle_text(self, m_in: str):
-        logger.debug(f"Message in: {m_in}")
-        m = MessageIn.model_validate_json(m_in)
-
-        # handshake with the client
-        if m.type == MessageType.HELLO:
-            m_out = MessageOut(
-                type=MessageType.HELLO,
-                transport="websocket",
-                audio_params={"sample_rate": 16000},
-            )
-            await self.response_text(m_out)
-            logger.info("Handshake with the client")
-
-        elif m.type == MessageType.LISTEN:
-            # capture opus bytes from the device
-            if m.state == AudioState.START:
+    async def handle(self, msg: str):
+        logger.debug(f"Receive message {msg}")
+        m = json.loads(msg)
+        if m["type"] == "hello":
+            await self.conn.send(json.dumps({"type": "hello", "transport": "websocket"}))
+        elif m["type"] == "listen":
+            if m["state"] == "start":
                 self.audio = b""
-            elif m.state == AudioState.DETECT:
-                pass
-            elif m.state == AudioState.STOP:
-                # response to the client
-                if self.audio == b"":
-                    return
-                asr_text = self.asr.transcript(self.audio)
-                logger.info(f"Client audio message: {asr_text}")
-                chat_completion = await Connection.agent_service.chat_completion(self.conn, asr_text)
-                m_out = MessageOut(
-                    type=MessageType.TTS,
-                    state=AudioState.SENTENCE_START,
-                    text=chat_completion,
-                )
-                await self.response_text(m_out)
-                logger.info(f"Response to client: {chat_completion}")
-                audio_stream = wav_to_opus(self.tts.synthesize(chat_completion))
-                await self.response_audio(audio_stream)
+            elif m["state"] == "stop":
+                if self.audio != b"":
+                    trans = self.asr.transcript(self.audio)  # transcript
+                    logger.debug(f"Transcription: {trans}")
+                    self.mem.add_user_msg(trans)
+                    comp = self.chat.completion(self.mem.get())  # chat completion
+                    logger.debug(f"Completion: {comp}")
+                    self.mem.add_assistant_msg(comp)
+                    await self.conn.send(json.dumps({"type": "tts", "state": "sentence_start", "text": comp}))
+                    res = self.tts.synthesize(comp)  # tts
+                    await self.conn.send(json.dumps({"type": "tts", "state": "start", "sample_rate": self.sample_rate}))
+                    stream = wav_to_opus(res)
+                    for chunk in stream:
+                        await self.conn.send(chunk)
+                    await self.conn.send(json.dumps({"type": "tts", "state": "stop"}))
 
     async def route(self):
-        Connection.agent_service.messages = Connection.agent_service.messages[:1]
-        while True:
-            try:
-                m_in = await self.conn.recv()
-                if isinstance(m_in, str):
-                    await self.handle_text(m_in)
-                elif isinstance(m_in, bytes):
-                    pcm = self.dec.decode(m_in, self.fs)
+        try:
+            async for msg in self.conn:
+                if isinstance(msg, str):
+                    await self.handle(msg)
+                elif isinstance(msg, bytes):
+                    pcm = self.dec.decode(msg, self.fs)
                     self.audio += pcm
-            except ConnectionClosed:
-                break
-
-    @classmethod
-    def inject(cls, agent_service: AgentService):
-        cls.agent_service = agent_service
+        except ConnectionClosed:
+            pass
