@@ -5,13 +5,13 @@ from loguru import logger
 from openai.types.chat import ChatCompletionMessageToolCall
 from websockets.asyncio.server import ServerConnection
 
+from app.agent.qwen import Qwen
 from app.infra.iot_provider import IOTProvider
-from app.infra.llm_provider import LLMProvider
 from app.schemas import iot_function_schemas as iotfs
 
 
 class AgentService:
-    def __init__(self, llm_client: LLMProvider, iot_client: IOTProvider):
+    def __init__(self, llm_client: Qwen, iot_client: IOTProvider):
         self.llm_client = llm_client
         self.iot_client = iot_client
         with open("assets/agent_prompt_text.txt") as f:

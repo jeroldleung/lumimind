@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from openai import OpenAI, pydantic_function_tool
@@ -9,10 +10,12 @@ from openai.types.chat import (
 from pydantic import BaseModel
 
 
-class LLMProvider:
-    def __init__(self, *, base_url: str, api_key: str, model: str):
+class Qwen:
+    def __init__(self):
+        base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        api_key = os.environ["ALIYUN_API_KEY"]
         self.client = OpenAI(base_url=base_url, api_key=api_key)
-        self.model = model
+        self.model = os.environ["ALIYUN_LLM_MODEL"]
         self.tools: List[ChatCompletionToolParam] = []
 
     def registry_tools(self, tools: List[BaseModel]):

@@ -5,10 +5,10 @@ import signal
 from loguru import logger
 from websockets.asyncio.server import serve
 
+from app.agent.qwen import Qwen
 from app.asr.sensevoice import SenseVoice
 from app.core.connection_handler import ConnectionHandler
 from app.infra.iot_provider import IOTProvider
-from app.infra.llm_provider import LLMProvider
 from app.services.agent_service import AgentService
 from app.services.audio_service import AudioService
 from app.tts.cosyvoice import CosyVoice
@@ -22,11 +22,7 @@ class WebsocketServer:
         # client initialize
         asr_client = SenseVoice()
         tts_client = CosyVoice()
-        llm_client = LLMProvider(
-            base_url=os.environ["LLM_BASE_URL"],
-            api_key=os.environ["LLM_API_KEY"],
-            model=os.environ["LLM_MODEL"],
-        )
+        llm_client = Qwen()
         iot_client = IOTProvider(os.environ["IOT_SERVICE_URL"])
 
         # service initialize
