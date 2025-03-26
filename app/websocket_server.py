@@ -5,8 +5,8 @@ import signal
 from loguru import logger
 from websockets.asyncio.server import serve
 
+from app.asr.sensevoice import SenseVoice
 from app.core.connection_handler import ConnectionHandler
-from app.infra.asr_provider import ASRProvider
 from app.infra.iot_provider import IOTProvider
 from app.infra.llm_provider import LLMProvider
 from app.infra.tts_provider import TTSProvider
@@ -20,7 +20,7 @@ class WebsocketServer:
         self.port = os.environ["SERVER_PORT"]
 
         # client initialize
-        asr_client = ASRProvider(local_path=os.environ["ASR_LOCAL_PATH"])
+        asr_client = SenseVoice()
         tts_client = TTSProvider(os.environ["TTS_API_KEY"], os.environ["TTS_MODEL"])
         llm_client = LLMProvider(
             base_url=os.environ["LLM_BASE_URL"],

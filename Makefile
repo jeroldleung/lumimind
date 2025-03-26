@@ -1,8 +1,8 @@
 .PHONY: lint test clean
 
 lint:
-		ruff format --exclude third_party
-		ruff check --exclude third_party --fix --select I,E,W,F,B
+		ruff format
+		ruff check --fix
 
 test:
 		pytest tests
