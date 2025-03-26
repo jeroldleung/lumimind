@@ -1,9 +1,11 @@
 from typing import Generator, List
 
 from loguru import logger
+import opuslib
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
+from app.asr.sensevoice import SenseVoice
 from app.schemas.iot_message_schemas import (
     AudioState,
     MessageIn,
@@ -18,9 +20,16 @@ class Connection:
     audio_service: AudioService | None = None
     agent_service: AgentService | None = None
 
-    def __init__(self, conn: ServerConnection):
+    def __init__(self, conn: ServerConnection, asr: SenseVoice):
         self.conn = conn
-        self.audio_in: List[bytes] = []
+        self.asr = asr
+        self.audio = b""
+        self.sample_rate = 16000
+        self.channel = 1
+        self.ms = 60
+        self.fs = int(self.channel * self.ms * self.sample_rate / 1000)
+        self.dec = opuslib.Decoder(self.sample_rate, self.channel)
+        
 
     async def response_text(self, m_out: MessageOut):
         m_out = m_out.model_dump_json(exclude_unset=True)
@@ -53,14 +62,14 @@ class Connection:
         elif m.type == MessageType.LISTEN:
             # capture opus bytes from the device
             if m.state == AudioState.START:
-                self.audio_in.clear()
+                self.audio = b""
             elif m.state == AudioState.DETECT:
                 pass
             elif m.state == AudioState.STOP:
                 # response to the client
-                if len(self.audio_in) == 0:
+                if self.audio == b"":
                     return
-                asr_text = Connection.audio_service.speech2text(self.audio_in)
+                asr_text = self.asr.transcript(self.audio)
                 logger.info(f"Client audio message: {asr_text}")
                 chat_completion = await Connection.agent_service.chat_completion(self.conn, asr_text)
                 m_out = MessageOut(
@@ -73,8 +82,6 @@ class Connection:
                 audio_stream = Connection.audio_service.text2speech(chat_completion)
                 await self.response_audio(audio_stream)
 
-    async def handle_binary(self, m_in: bytes):
-        self.audio_in.append(m_in)
 
     async def route(self):
         Connection.agent_service.messages = Connection.agent_service.messages[:1]
@@ -84,7 +91,8 @@ class Connection:
                 if isinstance(m_in, str):
                     await self.handle_text(m_in)
                 elif isinstance(m_in, bytes):
-                    await self.handle_binary(m_in)
+                    pcm = self.dec.decode(m_in, self.fs)
+                    self.audio += pcm
             except ConnectionClosed:
                 break
 

@@ -6,7 +6,7 @@ class SenseVoice:
     def __init__(self):
         self.model = AutoModel(model="pretrained_models/SenseVoiceSmall", disable_update=True, disable_pbar=True)
 
-    def speech2text(self, audio_bytes: bytes) -> str:
-        res = self.model.generate(input=audio_bytes)
+    def transcript(self, audio: bytes) -> str:
+        res = self.model.generate(input=audio)
         text = rich_transcription_postprocess(res[0]["text"])
         return text

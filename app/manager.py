@@ -28,6 +28,6 @@ class Manager:
 
     async def handle(self, conn: ServerConnection):
         logger.info(f"Open connection {conn.id}")
-        c = Connection(conn)
+        c = Connection(conn, self.asr)
         await c.route()
         logger.info(f"Close connection {conn.id}")
