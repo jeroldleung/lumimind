@@ -5,8 +5,8 @@ from loguru import logger
 from openai.types.chat import ChatCompletionMessageToolCall
 from websockets.asyncio.server import ServerConnection
 
-from app.agent.qwen import Qwen
-from app.agent.iot import IOTProvider
+from app.chat.iot import IOTProvider
+from app.chat.qwen import Qwen
 from app.schemas import iot_function_schemas as iotfs
 
 
