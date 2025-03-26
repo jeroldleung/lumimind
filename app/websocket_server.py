@@ -9,9 +9,9 @@ from app.asr.sensevoice import SenseVoice
 from app.core.connection_handler import ConnectionHandler
 from app.infra.iot_provider import IOTProvider
 from app.infra.llm_provider import LLMProvider
-from app.infra.tts_provider import TTSProvider
 from app.services.agent_service import AgentService
 from app.services.audio_service import AudioService
+from app.tts.cosyvoice import CosyVoice
 
 
 class WebsocketServer:
@@ -21,7 +21,7 @@ class WebsocketServer:
 
         # client initialize
         asr_client = SenseVoice()
-        tts_client = TTSProvider(os.environ["TTS_API_KEY"], os.environ["TTS_MODEL"])
+        tts_client = CosyVoice()
         llm_client = LLMProvider(
             base_url=os.environ["LLM_BASE_URL"],
             api_key=os.environ["LLM_API_KEY"],

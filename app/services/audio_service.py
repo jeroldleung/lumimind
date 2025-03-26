@@ -3,12 +3,12 @@ from typing import Generator, List
 import opuslib
 
 from app.asr.sensevoice import SenseVoice
-from app.infra.tts_provider import TTSProvider
+from app.tts.cosyvoice import CosyVoice
 from app.utils.audio import wav_to_opus
 
 
 class AudioService:
-    def __init__(self, asr_client: SenseVoice, tts_client: TTSProvider):
+    def __init__(self, asr_client: SenseVoice, tts_client: CosyVoice):
         self.asr_client = asr_client
         self.tts_client = tts_client
         self.fs = int(1 * 60 * 16000 / 1000)
