@@ -1,7 +1,7 @@
-from typing import Generator, List
+from typing import Generator
 
-from loguru import logger
 import opuslib
+from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
@@ -13,23 +13,23 @@ from app.schemas.iot_message_schemas import (
     MessageType,
 )
 from app.services.agent_service import AgentService
-from app.services.audio_service import AudioService
+from app.tts.cosyvoice import CosyVoice
+from app.utils.audio import wav_to_opus
 
 
 class Connection:
-    audio_service: AudioService | None = None
     agent_service: AgentService | None = None
 
-    def __init__(self, conn: ServerConnection, asr: SenseVoice):
+    def __init__(self, conn: ServerConnection, asr: SenseVoice, tts: CosyVoice):
         self.conn = conn
         self.asr = asr
+        self.tts = tts
         self.audio = b""
         self.sample_rate = 16000
         self.channel = 1
         self.ms = 60
         self.fs = int(self.channel * self.ms * self.sample_rate / 1000)
         self.dec = opuslib.Decoder(self.sample_rate, self.channel)
-        
 
     async def response_text(self, m_out: MessageOut):
         m_out = m_out.model_dump_json(exclude_unset=True)
@@ -79,9 +79,8 @@ class Connection:
                 )
                 await self.response_text(m_out)
                 logger.info(f"Response to client: {chat_completion}")
-                audio_stream = Connection.audio_service.text2speech(chat_completion)
+                audio_stream = wav_to_opus(self.tts.synthesize(chat_completion))
                 await self.response_audio(audio_stream)
-
 
     async def route(self):
         Connection.agent_service.messages = Connection.agent_service.messages[:1]
@@ -97,6 +96,5 @@ class Connection:
                 break
 
     @classmethod
-    def inject(cls, audio_service: AudioService, agent_service: AgentService):
-        cls.audio_service = audio_service
+    def inject(cls, agent_service: AgentService):
         cls.agent_service = agent_service
