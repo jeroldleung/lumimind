@@ -7,14 +7,14 @@ from websockets.asyncio.server import serve
 
 from app.agent.qwen import Qwen
 from app.asr.sensevoice import SenseVoice
-from app.core.connection_handler import ConnectionHandler
-from app.infra.iot_provider import IOTProvider
+from app.connection import Connection
+from app.agent.iot import IOTProvider
 from app.services.agent_service import AgentService
 from app.services.audio_service import AudioService
 from app.tts.cosyvoice import CosyVoice
 
 
-class WebsocketServer:
+class Server:
     def __init__(self):
         self.host = os.environ["SERVER_HOST"]
         self.port = os.environ["SERVER_PORT"]
@@ -30,10 +30,10 @@ class WebsocketServer:
         agent_service = AgentService(llm_client, iot_client)
 
         # singleton services are injected to connection handler
-        ConnectionHandler.inject(audio_service, agent_service)
+        Connection.inject(audio_service, agent_service)
 
     async def start(self):
-        async with serve(ConnectionHandler.instantiate, self.host, self.port) as server:
+        async with serve(Connection.instantiate, self.host, self.port) as server:
             logger.success("Server started")
             # Close the server when receiving SIGTERM and SIGINT.
             loop = asyncio.get_running_loop()

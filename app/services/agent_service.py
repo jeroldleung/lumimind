@@ -6,7 +6,7 @@ from openai.types.chat import ChatCompletionMessageToolCall
 from websockets.asyncio.server import ServerConnection
 
 from app.agent.qwen import Qwen
-from app.infra.iot_provider import IOTProvider
+from app.agent.iot import IOTProvider
 from app.schemas import iot_function_schemas as iotfs
 
 

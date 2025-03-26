@@ -14,7 +14,7 @@ from app.services.agent_service import AgentService
 from app.services.audio_service import AudioService
 
 
-class ConnectionHandler:
+class Connection:
     audio_service: AudioService | None = None
     agent_service: AgentService | None = None
 
@@ -60,9 +60,9 @@ class ConnectionHandler:
                 # response to the client
                 if len(self.audio_in) == 0:
                     return
-                asr_text = ConnectionHandler.audio_service.speech2text(self.audio_in)
+                asr_text = Connection.audio_service.speech2text(self.audio_in)
                 logger.info(f"Client audio message: {asr_text}")
-                chat_completion = await ConnectionHandler.agent_service.chat_completion(self.websocket, asr_text)
+                chat_completion = await Connection.agent_service.chat_completion(self.websocket, asr_text)
                 m_out = MessageOut(
                     type=MessageType.TTS,
                     state=AudioState.SENTENCE_START,
@@ -70,14 +70,14 @@ class ConnectionHandler:
                 )
                 await self.response_text(m_out)
                 logger.info(f"Response to client: {chat_completion}")
-                audio_stream = ConnectionHandler.audio_service.text2speech(chat_completion)
+                audio_stream = Connection.audio_service.text2speech(chat_completion)
                 await self.response_audio(audio_stream)
 
     async def handle_binary(self, m_in: bytes):
         self.audio_in.append(m_in)
 
     async def handle_message(self):
-        ConnectionHandler.agent_service.messages = ConnectionHandler.agent_service.messages[:1]
+        Connection.agent_service.messages = Connection.agent_service.messages[:1]
         while True:
             try:
                 m_in = await self.websocket.recv()
@@ -95,14 +95,14 @@ class ConnectionHandler:
 
     @staticmethod
     async def instantiate(websocket: ServerConnection):
-        if ConnectionHandler.audio_service is None:
+        if Connection.audio_service is None:
             logger.error("Audio Service is not injected")
-        print(ConnectionHandler.agent_service)
-        if ConnectionHandler.agent_service is None:
+        print(Connection.agent_service)
+        if Connection.agent_service is None:
             logger.error("Chat Service is not injected")
 
         # create a handler instance for each websocket connection
         logger.info(f"Connection opened: {websocket.id}")
-        connection = ConnectionHandler(websocket)
+        connection = Connection(websocket)
         await connection.handle_message()
         logger.info(f"Connection closed: {websocket.id}")
