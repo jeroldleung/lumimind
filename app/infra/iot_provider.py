@@ -15,9 +15,7 @@ class IOTProvider:
             "Connection": "keep-alive",
         }
 
-    async def iot_control_lamp(
-        self, websocket: ServerConnection, args: Dict[str, Any]
-    ) -> str:
+    async def iot_control_lamp(self, websocket: ServerConnection, args: Dict[str, Any]) -> str:
         data = {
             "action": args["action"],
             "gatewayId": "e816564f9315",
@@ -33,9 +31,7 @@ class IOTProvider:
         )
         return res.text
 
-    async def iot_set_volume(
-        self, websocket: ServerConnection, args: Dict[str, Any]
-    ) -> str:
+    async def iot_set_volume(self, websocket: ServerConnection, args: Dict[str, Any]) -> str:
         m_out = {
             "type": "iot",
             "commands": [

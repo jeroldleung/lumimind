@@ -5,8 +5,9 @@ from loguru import logger
 from openai.types.chat import ChatCompletionMessageToolCall
 from websockets.asyncio.server import ServerConnection
 
-from ..infra import IOTProvider, LLMProvider
-from ..schemas import iot_function_schemas as iotfs
+from app.infra.iot_provider import IOTProvider
+from app.infra.llm_provider import LLMProvider
+from app.schemas import iot_function_schemas as iotfs
 
 
 class AgentService:
@@ -44,13 +45,9 @@ class AgentService:
         if complete.choices[0].message.content:
             return complete.choices[0].message.content
         else:
-            return await self.recur_tool_call(
-                websocket, complete.choices[0].message.tool_calls
-            )
+            return await self.recur_tool_call(websocket, complete.choices[0].message.tool_calls)
 
-    async def chat_completion(
-        self, websocket: ServerConnection, user_input: str
-    ) -> str:
+    async def chat_completion(self, websocket: ServerConnection, user_input: str) -> str:
         self.messages.append({"role": "user", "content": user_input})
         res_msg = self.llm_client.chat_completion(self.messages)
         content = res_msg.choices[0].message.content

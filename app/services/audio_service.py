@@ -2,8 +2,9 @@ from typing import Generator, List
 
 import opuslib
 
-from ..infra import ASRProvider, TTSProvider
-from ..utils.audio import wav_to_opus
+from app.infra.asr_provider import ASRProvider
+from app.infra.tts_provider import TTSProvider
+from app.utils.audio import wav_to_opus
 
 
 class AudioService:

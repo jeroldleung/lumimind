@@ -19,9 +19,7 @@ class LLMProvider:
         for t in tools:
             self.tools.append(pydantic_function_tool(t))
 
-    def chat_completion(
-        self, messages: List[ChatCompletionMessageParam]
-    ) -> ChatCompletion:
+    def chat_completion(self, messages: List[ChatCompletionMessageParam]) -> ChatCompletion:
         completion = self.client.chat.completions.create(
             model=self.model,
             messages=messages,

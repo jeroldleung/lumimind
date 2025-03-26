@@ -4,13 +4,14 @@ from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
-from ..schemas.iot_message_schemas import (
+from app.schemas.iot_message_schemas import (
     AudioState,
     MessageIn,
     MessageOut,
     MessageType,
 )
-from ..services import AgentService, AudioService
+from app.services.agent_service import AgentService
+from app.services.audio_service import AudioService
 
 
 class ConnectionHandler:
@@ -61,9 +62,7 @@ class ConnectionHandler:
                     return
                 asr_text = ConnectionHandler.audio_service.speech2text(self.audio_in)
                 logger.info(f"Client audio message: {asr_text}")
-                chat_completion = await ConnectionHandler.agent_service.chat_completion(
-                    self.websocket, asr_text
-                )
+                chat_completion = await ConnectionHandler.agent_service.chat_completion(self.websocket, asr_text)
                 m_out = MessageOut(
                     type=MessageType.TTS,
                     state=AudioState.SENTENCE_START,
@@ -71,18 +70,14 @@ class ConnectionHandler:
                 )
                 await self.response_text(m_out)
                 logger.info(f"Response to client: {chat_completion}")
-                audio_stream = ConnectionHandler.audio_service.text2speech(
-                    chat_completion
-                )
+                audio_stream = ConnectionHandler.audio_service.text2speech(chat_completion)
                 await self.response_audio(audio_stream)
 
     async def handle_binary(self, m_in: bytes):
         self.audio_in.append(m_in)
 
     async def handle_message(self):
-        ConnectionHandler.agent_service.messages = (
-            ConnectionHandler.agent_service.messages[:1]
-        )
+        ConnectionHandler.agent_service.messages = ConnectionHandler.agent_service.messages[:1]
         while True:
             try:
                 m_in = await self.websocket.recv()

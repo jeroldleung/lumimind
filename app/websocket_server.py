@@ -1,29 +1,33 @@
 import asyncio
+import os
 import signal
 
 from loguru import logger
 from websockets.asyncio.server import serve
 
-from .config import settings
-from .core.connection_handler import ConnectionHandler
-from .infra import ASRProvider, IOTProvider, LLMProvider, TTSProvider
-from .services import AgentService, AudioService
+from app.core.connection_handler import ConnectionHandler
+from app.infra.asr_provider import ASRProvider
+from app.infra.iot_provider import IOTProvider
+from app.infra.llm_provider import LLMProvider
+from app.infra.tts_provider import TTSProvider
+from app.services.agent_service import AgentService
+from app.services.audio_service import AudioService
 
 
 class WebsocketServer:
     def __init__(self):
-        self.host = settings.SERVER_HOST
-        self.port = settings.SERVER_PORT
+        self.host = os.environ["SERVER_HOST"]
+        self.port = os.environ["SERVER_PORT"]
 
         # client initialize
-        asr_client = ASRProvider(local_path=settings.ASR_LOCAL_PATH)
-        tts_client = TTSProvider(settings.TTS_API_KEY, settings.TTS_MODEL)
+        asr_client = ASRProvider(local_path=os.environ["ASR_LOCAL_PATH"])
+        tts_client = TTSProvider(os.environ["TTS_API_KEY"], os.environ["TTS_MODEL"])
         llm_client = LLMProvider(
-            base_url=settings.LLM_BASE_URL,
-            api_key=settings.LLM_API_KEY,
-            model=settings.LLM_MODEL,
+            base_url=os.environ["LLM_BASE_URL"],
+            api_key=os.environ["LLM_API_KEY"],
+            model=os.environ["LLM_MODEL"],
         )
-        iot_client = IOTProvider(settings.IOT_SERVICE_URL)
+        iot_client = IOTProvider(os.environ["IOT_SERVICE_URL"])
 
         # service initialize
         audio_service = AudioService(asr_client, tts_client)
