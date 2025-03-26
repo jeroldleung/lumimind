@@ -35,8 +35,9 @@ class WebsocketServer:
     async def start(self):
         async with serve(ConnectionHandler.instantiate, self.host, self.port) as server:
             logger.success("Server started")
-            # Close the server when receiving SIGTERM.
+            # Close the server when receiving SIGTERM and SIGINT.
             loop = asyncio.get_running_loop()
             loop.add_signal_handler(signal.SIGTERM, server.close)
+            loop.add_signal_handler(signal.SIGINT, server.close)
             await server.wait_closed()
             logger.success("Server closed")

@@ -2,14 +2,13 @@ from typing import Generator, List
 
 import opuslib
 
-from ..infra import ASRProvider, TTSProvider, VADProvider
+from ..infra import ASRProvider, TTSProvider
 from ..utils.audio import wav_to_opus
 
 
 class AudioService:
     def __init__(self, asr_client: ASRProvider, tts_client: TTSProvider):
         self.asr_client = asr_client
-        self.vad_client = VADProvider()
         self.tts_client = tts_client
         self.fs = int(1 * 60 * 16000 / 1000)
         self.decoder = opuslib.Decoder(16000, 1)  # 16000 sample rate and 1 channel
