@@ -56,6 +56,7 @@ class Connection:
         await self.conn.send(Message.build_tts(state="start"))
         for chunk in self.codec.encode(res):
             await self.conn.send(chunk)
+            await asyncio.sleep(self.codec.ms * 1e-3)
         await self.conn.send(Message.build_tts(state="stop"))
 
     async def _route(self, msg: str):
