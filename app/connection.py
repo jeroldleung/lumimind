@@ -5,18 +5,18 @@ from loguru import logger
 from websockets.asyncio.server import ServerConnection
 from websockets.exceptions import ConnectionClosed
 
+from app.agent.qwen import Qwen
 from app.asr.sensevoice import SenseVoice
-from app.chat.qwen import Qwen
 from app.codec import Codec
 from app.memory import Memory
 from app.tts.cosyvoice import CosyVoice
 
 
 class Connection:
-    def __init__(self, conn: ServerConnection, asr: SenseVoice, chat: Qwen, tts: CosyVoice, codec: Codec):
+    def __init__(self, conn: ServerConnection, asr: SenseVoice, agent: Qwen, tts: CosyVoice, codec: Codec):
         self.conn = conn
         self.asr = asr
-        self.chat = chat
+        self.agent = agent
         self.mem = Memory()
         self.tts = tts
         self.codec = codec
@@ -47,7 +47,7 @@ class Connection:
         trans = self.asr.transcript(self.audio)  # transcript
         logger.debug(f"Transcription: {trans}")
         self.mem.add_user_msg(trans)
-        comp = self.chat.completion(self.mem.get())  # chat completion
+        comp = self.agent.chat(self.mem.get())  # chat completion
         logger.debug(f"Completion: {comp}")
         self.mem.add_assistant_msg(comp)
         await self.conn.send(json.dumps({"type": "tts", "state": "sentence_start", "text": comp}))

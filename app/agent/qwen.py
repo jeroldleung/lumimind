@@ -11,6 +11,6 @@ class Qwen:
         self.client = OpenAI(base_url=base_url, api_key=api_key)
         self.model = os.environ["ALIYUN_LLM_MODEL"]
 
-    def completion(self, messages: List[Dict]) -> str:
+    def chat(self, messages: List[Dict]) -> str:
         completion = self.client.chat.completions.create(model=self.model, messages=messages)
         return completion.choices[0].message.content
