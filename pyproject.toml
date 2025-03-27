@@ -10,7 +10,6 @@ dependencies = [
     "loguru>=0.7.3",
     "openai>=1.68.2",
     "opuslib>=3.0.1",
-    "pydub>=0.25.1",
     "python-dotenv>=1.1.0",
     "torch>=2.6.0",
     "torchaudio>=2.6.0",
@@ -23,7 +22,7 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 120
+line-length = 150
 
 [tool.ruff.lint]
 select = [

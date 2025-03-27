@@ -39,8 +39,8 @@ class Connection:
                     self.mem.add_assistant_msg(comp)
                     await self.conn.send(json.dumps({"type": "tts", "state": "sentence_start", "text": comp}))
                     res = self.tts.synthesize(comp)  # tts
-                    await self.conn.send(json.dumps({"type": "tts", "state": "start", "sample_rate": self.sample_rate}))
-                    stream = self.codec.wav_to_opus(res)
+                    await self.conn.send(json.dumps({"type": "tts", "state": "start", "sample_rate": self.codec.sample_rate}))
+                    stream = self.codec.encode(res)
                     for chunk in stream:
                         await self.conn.send(chunk)
                     await self.conn.send(json.dumps({"type": "tts", "state": "stop"}))
@@ -55,4 +55,3 @@ class Connection:
                     self.audio += pcm
         except ConnectionClosed:
             logger.info(f"Close connection {self.conn.id}")
-

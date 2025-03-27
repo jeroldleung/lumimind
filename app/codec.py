@@ -1,43 +1,26 @@
-from io import BytesIO
 from typing import Generator
 
-import numpy as np
 import opuslib
-import soundfile as sf
-from pydub import AudioSegment
 
 
 class Codec:
-    def __init__(self, sample_rate: int, channel: int, ms: int):
-        self.sample_rate = sample_rate
-        self.channel = channel
-        self.ms = ms
-        self.fs = int(self.channel * self.sample_rate * self.ms / 1000)
+    def __init__(self):
+        self.sample_rate = 16000
+        self.channel = 1
+        self.ms = 60
+        self.fs = int(self.channel * self.sample_rate * self.ms / 1000)  # how many sample of a frame
         self.dec = opuslib.Decoder(self.sample_rate, self.channel)
         self.enc = opuslib.Encoder(self.sample_rate, self.channel, opuslib.APPLICATION_AUDIO)
 
     def decode(self, opus: bytes) -> bytes:
         return self.dec.decode(opus, self.fs)
 
-    def encode(self):
-        pass
-
-    def wav_to_opus(self, audio_bytes: bytes) -> Generator[bytes, None, None]:
-        audio_np = np.frombuffer(audio_bytes, dtype=np.int16)
-        wav_buf = BytesIO()
-        sf.write(wav_buf, audio_np, samplerate=16000, format="wav")
-        audio = AudioSegment.from_file(wav_buf, format="wav")  # load wav data
-        audio.set_channels(1).set_frame_rate(16000)
-        encoder = opuslib.Encoder(16000, 1, opuslib.APPLICATION_AUDIO)
-
-        frame_duration = 60  # 60ms per frame
-        frame_size = int(16000 * frame_duration / 1000)
-        raw_data = audio.raw_data
-
-        for i in range(0, len(raw_data), frame_size * 2):
-            chunk = raw_data[i : i + frame_size * 2]
-            if len(chunk) < frame_size * 2:
-                chunk += b"\x00" * (frame_size * 2 - len(chunk))
-            np_frame = np.frombuffer(chunk, dtype=np.int16)
-            opus_data = encoder.encode(np_frame.tobytes(), frame_size)
-            yield opus_data
+    def encode(self, pcm: bytes) -> Generator[bytes, None, None]:
+        # since the pcm is int16 bit depth, i.e., two bytes per sample,
+        # so the audio bytes chunk size is fs * 2
+        chunk_size = self.fs * 2
+        for i in range(0, len(pcm), chunk_size):
+            chunk = bytearray(chunk_size)
+            chunk[:chunk_size] = pcm[i : i + chunk_size]
+            opus = self.enc.encode(bytes(chunk), self.fs)
+            yield opus
