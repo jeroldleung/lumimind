@@ -1,3 +1,5 @@
+import asyncio
+
 from loguru import logger
 from websockets.asyncio.server import ServerConnection
 
@@ -18,4 +20,5 @@ class Manager:
     async def handle(self, conn: ServerConnection):
         logger.info(f"Open connection {conn.id}")
         c = Connection(conn, self.asr, self.chat, self.tts, self.codec)
-        await c.route()
+        await asyncio.gather(c.consume(), c.produce())
+        logger.info(f"Close connection {conn.id}")
