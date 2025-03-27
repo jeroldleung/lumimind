@@ -9,6 +9,7 @@ from app.agent.qwen import Qwen
 from app.asr.sensevoice import SenseVoice
 from app.codec import Codec
 from app.memory import Memory
+from app.message import Message
 from app.tts.cosyvoice import CosyVoice
 
 
@@ -50,18 +51,18 @@ class Connection:
         comp = self.agent.chat(self.mem.get())  # chat completion
         logger.debug(f"Completion: {comp}")
         self.mem.add_assistant_msg(comp)
-        await self.conn.send(json.dumps({"type": "tts", "state": "sentence_start", "text": comp}))
+        await self.conn.send(Message.build_tts(state="sentence_start", text=comp))
         res = self.tts.synthesize(comp)  # tts
-        await self.conn.send(json.dumps({"type": "tts", "state": "start"}))
+        await self.conn.send(Message.build_tts(state="start"))
         for chunk in self.codec.encode(res):
             await self.conn.send(chunk)
-        await self.conn.send(json.dumps({"type": "tts", "state": "stop"}))
+        await self.conn.send(Message.build_tts(state="stop"))
 
     async def _route(self, msg: str):
         logger.debug(f"Receive message {msg}")
         m = json.loads(msg)
         if m["type"] == "hello":
-            await self.conn.send(json.dumps({"type": "hello", "transport": "websocket"}))
+            await self.conn.send(Message.build_hello(sample_rate=self.codec.sample_rate))
         elif m["type"] == "listen":
             if m["state"] == "start":
                 self.audio = b""
