@@ -1,11 +1,11 @@
 .PHONY: lint test clean
 
 lint:
-		ruff format
-		ruff check --fix
+		uv run ruff format
+		uv run ruff check --fix
 
 test:
-		pytest tests
+		uv run pytest tests
 
 clean:
 		find app tests | grep __pycache__ | xargs rm -rf
