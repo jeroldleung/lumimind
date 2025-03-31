@@ -10,6 +10,7 @@ from app.asr.sensevoice import SenseVoice
 from app.codec import Codec
 from app.memory import Memory
 from app.message import Message
+from app.toolcall.iot import Device
 from app.tts.cosyvoice import CosyVoice
 
 
@@ -20,6 +21,7 @@ class Connection:
         self.agent = agent
         self.mem = Memory()
         self.tts = tts
+        self.toolcall = Device(conn)
         self.codec = codec
         self.audio = b""
         self.queue = asyncio.Queue()
@@ -54,9 +56,12 @@ class Connection:
         await self.conn.send(Message.build_tts(state="sentence_start", text=comp))
         res = self.tts.synthesize(comp)  # tts
         await self.conn.send(Message.build_tts(state="start"))
+        await asyncio.sleep(0.1)
+        n_wait = 0
         for chunk in self.codec.encode(res):
+            n_wait += 1
             await self.conn.send(chunk)
-            await asyncio.sleep(self.codec.ms * 1e-3)
+        await asyncio.sleep(n_wait * self.codec.ms * 1e-3)
         await self.conn.send(Message.build_tts(state="stop"))
 
     async def _route(self, msg: str):
@@ -64,6 +69,8 @@ class Connection:
         m = json.loads(msg)
         if m["type"] == "hello":
             await self.conn.send(Message.build_hello(sample_rate=self.codec.sample_rate))
+        elif m["type"] == "iot":
+            self.toolcall.registry(m)
         elif m["type"] == "listen":
             if m["state"] == "start":
                 self.audio = b""
