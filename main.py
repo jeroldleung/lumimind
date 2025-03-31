@@ -1,7 +1,10 @@
 import asyncio
 
-from app import WebsocketServer
+from dotenv import load_dotenv
+
+from app.server import Server
 
 if __name__ == "__main__":
-    server = WebsocketServer()
+    load_dotenv()
+    server = Server()
     asyncio.run(server.start())
